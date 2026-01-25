@@ -1,0 +1,12 @@
+name: Exploding Sheep
+id: exploding_sheep
+version: 1.0.0
+type: MICROGAME
+api-version: 1.0
+main: net.blueva.arcade.modules.explodingsheep.ExplodingSheepModule
+
+authors:
+  - Blueva
+  - Whiron
+
+description: "Shear sheep to score points before they explode!"
