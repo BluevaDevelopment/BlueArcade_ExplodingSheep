@@ -15,8 +15,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 
 public class ExplodingSheepListener implements Listener {
@@ -71,6 +74,55 @@ public class ExplodingSheepListener implements Listener {
         if (event.getTo().getY() < minY - 1) {
             gameManager.handlePlayerElimination(player);
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player victim)) {
+            return;
+        }
+
+        Player attacker = resolvePlayerAttacker(event.getDamager());
+        if (attacker == null) {
+            return;
+        }
+
+        GameContext<Player, Location, World, Material, ItemStack, Sound, Block, Entity> context =
+                gameManager.getGameContext(victim);
+        if (context == null) {
+            return;
+        }
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onSheepExplosionDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Sheep sheep)) {
+            return;
+        }
+
+        EntityDamageEvent.DamageCause cause = event.getCause();
+        if (cause != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+                && cause != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+            return;
+        }
+
+        if (!gameManager.isTrackedSheep(sheep)) {
+            return;
+        }
+
+        event.setCancelled(true);
+    }
+
+    private Player resolvePlayerAttacker(Entity damager) {
+        if (damager instanceof Player player) {
+            return player;
+        }
+        if (damager instanceof Projectile projectile && projectile.getShooter() instanceof Player player) {
+            return player;
+        }
+        return null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

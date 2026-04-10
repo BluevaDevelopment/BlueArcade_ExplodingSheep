@@ -50,7 +50,7 @@ public class ExplodingSheepModule implements GameModule<Player, Location, World,
         VoteMenuAPI voteMenu = ModuleAPI.getVoteMenuAPI();
         AchievementsAPI achievementsAPI = ModuleAPI.getAchievementsAPI();
 
-        statsService = new ExplodingSheepStatsService(statsAPI, moduleInfo);
+        statsService = new ExplodingSheepStatsService(statsAPI, moduleInfo, moduleConfig);
         statsService.registerStats();
 
         moduleConfig.register("language.yml", 1);

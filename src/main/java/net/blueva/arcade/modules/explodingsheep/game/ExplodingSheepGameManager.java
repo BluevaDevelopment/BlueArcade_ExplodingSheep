@@ -266,6 +266,11 @@ public class ExplodingSheepGameManager {
             return;
         }
 
+        // Don't eliminate spectators
+        if (context.getSpectators().contains(player)) {
+            return;
+        }
+
         ExplodingSheepArenaState state = arenas.get(context.getArenaId());
         if (state == null) {
             return;
@@ -311,6 +316,16 @@ public class ExplodingSheepGameManager {
 
         context.getSoundsAPI().play(player, sheepService.getConfiguredSound("sounds.shear", Sound.ENTITY_SHEEP_SHEAR), 1.0f, 1.0f);
         updateArenaScoreboards(context, state);
+    }
+
+    public boolean isTrackedSheep(Sheep sheep) {
+        UUID sheepId = sheep.getUniqueId();
+        for (ExplodingSheepArenaState state : arenas.values()) {
+            if (state.getSheep().containsKey(sheepId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void updateArenaScoreboards(GameContext<Player, Location, World, Material, ItemStack, Sound, Block, Entity> context,

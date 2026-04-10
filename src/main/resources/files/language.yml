@@ -25,6 +25,11 @@ vote_menu:
     - "<white>{votes}</white> <gray>votes.</gray>"
 
 stats:
+
+  descriptions:
+    wins: "Exploding Sheep wins"
+    games_played: "Exploding Sheep games played"
+    sheep_sheared: "Fuse-stopping sheep"
   labels:
     sheep_sheared: "Sheep sheared"
     games_played: "Exploding Sheep games played"

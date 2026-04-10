@@ -4,6 +4,7 @@ import net.blueva.arcade.api.module.ModuleInfo;
 import net.blueva.arcade.api.stats.StatDefinition;
 import net.blueva.arcade.api.stats.StatScope;
 import net.blueva.arcade.api.stats.StatsAPI;
+import net.blueva.arcade.api.config.ModuleConfigAPI;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -12,10 +13,12 @@ public class ExplodingSheepStatsService {
 
     private final StatsAPI statsAPI;
     private final ModuleInfo moduleInfo;
+    private final ModuleConfigAPI moduleConfig;
 
-    public ExplodingSheepStatsService(StatsAPI statsAPI, ModuleInfo moduleInfo) {
+    public ExplodingSheepStatsService(StatsAPI statsAPI, ModuleInfo moduleInfo, ModuleConfigAPI moduleConfig) {
         this.statsAPI = statsAPI;
         this.moduleInfo = moduleInfo;
+        this.moduleConfig = moduleConfig;
     }
 
     public void registerStats() {
@@ -24,11 +27,11 @@ public class ExplodingSheepStatsService {
         }
 
         statsAPI.registerModuleStat(moduleInfo.getId(),
-                new StatDefinition("wins", "Wins", "Exploding Sheep wins", StatScope.MODULE));
+                new StatDefinition("wins", moduleConfig.getStringFrom("language.yml", "stats.labels.wins", "Wins"), moduleConfig.getStringFrom("language.yml", "stats.descriptions.wins", "Exploding Sheep wins"), StatScope.MODULE));
         statsAPI.registerModuleStat(moduleInfo.getId(),
-                new StatDefinition("games_played", "Games Played", "Exploding Sheep games played", StatScope.MODULE));
+                new StatDefinition("games_played", moduleConfig.getStringFrom("language.yml", "stats.labels.games_played", "Games Played"), moduleConfig.getStringFrom("language.yml", "stats.descriptions.games_played", "Exploding Sheep games played"), StatScope.MODULE));
         statsAPI.registerModuleStat(moduleInfo.getId(),
-                new StatDefinition("sheep_sheared", "Sheep sheared", "Fuse-stopping sheep", StatScope.MODULE));
+                new StatDefinition("sheep_sheared", moduleConfig.getStringFrom("language.yml", "stats.labels.sheep_sheared", "Sheep sheared"), moduleConfig.getStringFrom("language.yml", "stats.descriptions.sheep_sheared", "Fuse-stopping sheep"), StatScope.MODULE));
     }
 
     public boolean isEnabled() {
