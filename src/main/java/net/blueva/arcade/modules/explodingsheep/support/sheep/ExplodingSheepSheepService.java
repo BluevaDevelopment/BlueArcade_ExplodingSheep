@@ -250,7 +250,7 @@ public class ExplodingSheepSheepService {
         world.playSound(location, explosionSound, 1.0f, 1.0f);
 
         if (smoke) {
-            world.spawnParticle(Particle.EXPLOSION, location, 1, 0.2, 0.2, 0.2);
+            world.spawnParticle(explosionParticle(), location, 1, 0.2, 0.2, 0.2);
             world.spawnParticle(Particle.CLOUD, location, 10, radius / 2, 0.4, radius / 2, 0.05);
         }
 
@@ -326,10 +326,23 @@ public class ExplodingSheepSheepService {
         }
 
         for (Entity entity : world.getNearbyEntities(center, radius, radius, radius)) {
-            if (entity.getType() == EntityType.ITEM || entity.getType() == EntityType.EXPERIENCE_ORB) {
+            if (isItemDrop(entity.getType()) || entity.getType() == EntityType.EXPERIENCE_ORB) {
                 entity.remove();
             }
         }
+    }
+
+    private Particle explosionParticle() {
+        try {
+            return Particle.valueOf("EXPLOSION");
+        } catch (IllegalArgumentException ignored) {
+            return Particle.EXPLOSION_NORMAL;
+        }
+    }
+
+    private boolean isItemDrop(EntityType type) {
+        String name = type.name();
+        return name.equals("ITEM") || name.equals("DROPPED_ITEM");
     }
 
     public void cleanupSheep(ExplodingSheepArenaState state) {

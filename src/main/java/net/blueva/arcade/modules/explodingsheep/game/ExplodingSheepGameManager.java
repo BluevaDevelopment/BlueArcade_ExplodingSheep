@@ -200,7 +200,7 @@ public class ExplodingSheepGameManager {
 
         List<Player> leaderboard = scoreboardService.getTopPlayersByShears(context, playerSheared);
         if (!leaderboard.isEmpty()) {
-            Player winner = leaderboard.getFirst();
+            Player winner = leaderboard.get(0);
             context.setWinner(winner);
             handleWin(winner, state);
 
