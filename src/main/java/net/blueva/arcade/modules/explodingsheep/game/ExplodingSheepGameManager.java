@@ -314,7 +314,7 @@ public class ExplodingSheepGameManager {
         playerSheared.merge(player, 1, Integer::sum);
         statsService.recordSheepSheared(player);
 
-        context.getSoundsAPI().play(player, sheepService.getConfiguredSound("sounds.shear", Sound.ENTITY_SHEEP_SHEAR), 1.0f, 1.0f);
+        context.getSoundsAPI().play(player, sheepService.getConfiguredSound("sounds.shear", "ENTITY_SHEEP_SHEAR", Sound.ENTITY_SHEEP_SHEAR), 1.0f, 1.0f);
         updateArenaScoreboards(context, state);
     }
 

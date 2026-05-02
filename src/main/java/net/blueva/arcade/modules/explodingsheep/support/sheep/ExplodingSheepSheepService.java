@@ -20,6 +20,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
@@ -136,13 +137,12 @@ public class ExplodingSheepSheepService {
             return;
         }
 
-        Sheep sheep = world.spawn(spawn, Sheep.class, spawned -> {
-            spawned.setColor(DyeColor.WHITE);
-            spawned.setAI(true);
-            spawned.setSheared(false);
-            spawned.setAdult();
-            spawned.setRemoveWhenFarAway(false);
-        });
+        Sheep sheep = (Sheep) world.spawnEntity(spawn, EntityType.SHEEP);
+        sheep.setColor(DyeColor.WHITE);
+        sheep.setAI(true);
+        sheep.setSheared(false);
+        sheep.setAdult();
+        sheep.setRemoveWhenFarAway(false);
 
         int fuseSeconds = Math.max(5, moduleConfig.getInt("sheep.fuse.duration_seconds", 16));
         ExplodingSheepSheepData data = new ExplodingSheepSheepData(sheep, fuseSeconds * 20);
@@ -216,12 +216,12 @@ public class ExplodingSheepSheepService {
             );
 
             if (data.warningTicks() >= 20) {
-                Sound beepSound = getConfiguredSound("sounds.beep", Sound.BLOCK_NOTE_BLOCK_HAT);
+                Sound beepSound = getConfiguredSound("sounds.beep", "BLOCK_NOTE_BLOCK_HAT", Sound.BLOCK_NOTE_BLOCK_HAT);
                 sheep.getWorld().playSound(sheep.getLocation(), beepSound, 0.7f, 1.0f);
                 data.resetWarningTicks();
             }
         } else if (data.warningTicks() >= 20) {
-            Sound warningSound = getConfiguredSound("sounds.warning", Sound.BLOCK_NOTE_BLOCK_PLING);
+            Sound warningSound = getConfiguredSound("sounds.warning", "BLOCK_NOTE_BLOCK_PLING", Sound.BLOCK_NOTE_BLOCK_PLING);
             sheep.getWorld().playSound(sheep.getLocation(), warningSound, 0.6f, 1.0f);
             data.resetWarningTicks();
             data.resetBlinkTicks();
@@ -246,7 +246,7 @@ public class ExplodingSheepSheepService {
         boolean smoke = moduleConfig.getBoolean("sheep.explosion.smoke", true);
         boolean clearDrops = moduleConfig.getBoolean("sheep.explosion.clear_drops", true);
 
-        Sound explosionSound = getConfiguredSound("sounds.explosion", Sound.ENTITY_GENERIC_EXPLODE);
+        Sound explosionSound = getConfiguredSound("sounds.explosion", "ENTITY_GENERIC_EXPLODE", Sound.ENTITY_GENERIC_EXPLODE);
         world.playSound(location, explosionSound, 1.0f, 1.0f);
 
         if (smoke) {
@@ -354,12 +354,40 @@ public class ExplodingSheepSheepService {
         state.getSheep().clear();
     }
 
-    public Sound getConfiguredSound(String path, Sound fallback) {
-        String soundName = moduleConfig.getString(path, fallback.name());
-        try {
-            return Sound.valueOf(soundName.toUpperCase());
-        } catch (IllegalArgumentException ex) {
+    public Sound getConfiguredSound(String path, String fallbackName, Sound fallback) {
+        String soundName = moduleConfig.getString(path, fallbackName);
+        return resolveSound(soundName, fallback);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Sound resolveSound(String soundName, Sound fallback) {
+        if (soundName == null || soundName.isBlank()) {
             return fallback;
         }
+
+        try {
+            return (Sound) Enum.valueOf((Class) Sound.class, soundName.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException | ClassCastException ignored) {
+        }
+
+        try {
+            Class<?> namespacedKeyClass = Class.forName("org.bukkit.NamespacedKey");
+            Object key = namespacedKeyClass
+                    .getMethod("minecraft", String.class)
+                    .invoke(null, toModernSoundKey(soundName));
+            Object registry = Class.forName("org.bukkit.Registry").getField("SOUNDS").get(null);
+            Object resolved = registry.getClass().getMethod("get", namespacedKeyClass).invoke(registry, key);
+            if (resolved instanceof Sound sound) {
+                return sound;
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+
+        return fallback;
+    }
+
+    private String toModernSoundKey(String soundName) {
+        String normalized = soundName.trim().toLowerCase(Locale.ROOT);
+        return normalized.contains(":") ? normalized.substring(normalized.indexOf(':') + 1) : normalized.replace('_', '.');
     }
 }
